@@ -85,6 +85,10 @@ impl Fraction {
             denom: denominator,
         }
     }
+
+    const fn const_eq(self, other: Self) -> bool {
+        self.num == other.num && self.denom == other.denom
+    }
 }
 
 #[cfg(test)]

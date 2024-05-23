@@ -577,17 +577,17 @@ macro_rules! impl_duration_for_integer {
         impl<const F: Fraction> defmt::Format for Duration<$i, F>
         {
             fn format(&self, f: defmt::Formatter) {
-                if F.num == 3_600 && F.denom == 1 {
+                if F.const_eq(Fraction::new(3600, 1)) {
                     defmt::write!(f, "{} h", self.ticks)
-                } else if F.num == 60 && F.denom == 1 {
+                } else if F.const_eq(Fraction::new(60, 1)) {
                     defmt::write!(f, "{} min", self.ticks)
-                } else if F.num == 1 && F.denom == 1 {
+                } else if F.const_eq(Fraction::ONE) {
                     defmt::write!(f, "{} s", self.ticks)
-                } else if F.num == 1 && F.denom == 1_000 {
+                } else if F.const_eq(Fraction::MILLI) {
                     defmt::write!(f, "{} ms", self.ticks)
-                } else if F.num == 1 && F.denom == 1_000_000 {
+                } else if F.const_eq(Fraction::MICRO) {
                     defmt::write!(f, "{} us", self.ticks)
-                } else if F.num == 1 && F.denom == 1_000_000_000 {
+                } else if F.const_eq(Fraction::NANO) {
                     defmt::write!(f, "{} ns", self.ticks)
                 } else {
                     defmt::write!(f, "{} ticks @ ({}/{})", self.ticks, F.num, F.denom)
@@ -597,17 +597,17 @@ macro_rules! impl_duration_for_integer {
 
         impl<const F: Fraction> core::fmt::Display for Duration<$i, F> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                if F.num == 3_600 && F.denom == 1 {
+                if F.const_eq(Fraction::new(3600, 1)) {
                     write!(f, "{} h", self.ticks)
-                } else if F.num == 60 && F.denom == 1 {
+                } else if F.const_eq(Fraction::new(60, 1)) {
                     write!(f, "{} min", self.ticks)
-                } else if F.num == 1 && F.denom == 1 {
+                } else if F.const_eq(Fraction::ONE) {
                     write!(f, "{} s", self.ticks)
-                } else if F.num == 1 && F.denom == 1_000 {
+                } else if F.const_eq(Fraction::MILLI) {
                     write!(f, "{} ms", self.ticks)
-                } else if F.num == 1 && F.denom == 1_000_000 {
+                } else if F.const_eq(Fraction::MICRO) {
                     write!(f, "{} us", self.ticks)
-                } else if F.num == 1 && F.denom == 1_000_000_000 {
+                } else if F.const_eq(Fraction::NANO) {
                     write!(f, "{} ns", self.ticks)
                 } else {
                     write!(f, "{} ticks @ ({}/{})", self.ticks, F.num, F.denom)

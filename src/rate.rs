@@ -546,13 +546,13 @@ macro_rules! impl_rate_for_integer {
         impl<const F: Fraction> defmt::Format for Rate<$i, F>
         {
             fn format(&self, f: defmt::Formatter) {
-                if F.num == 1 && F.denom == 1 {
+                if F.const_eq(Fraction::ONE) {
                     defmt::write!(f, "{} Hz", self.raw)
-                } else if F.num == 1_000 && F.denom == 1 {
+                } else if F.const_eq(Fraction::KILO) {
                     defmt::write!(f, "{} kHz", self.raw)
-                } else if F.num == 1_000_000 && F.denom == 1 {
+                } else if F.const_eq(Fraction::MEGA) {
                     defmt::write!(f, "{} MHz", self.raw)
-                } else if F.num == 1_000_000_000 && F.denom == 1 {
+                } else if F.const_eq(Fraction::new(1_000_000_000, 1)) {
                     defmt::write!(f, "{} GHz", self.raw)
                 } else {
                     defmt::write!(f, "{} raw @ ({}/{})", self.raw, F.num, F.denom)
@@ -562,13 +562,13 @@ macro_rules! impl_rate_for_integer {
 
         impl<const F: Fraction> core::fmt::Display for Rate<$i, F> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                if F.num == 1 && F.denom == 1 {
+                if F.const_eq(Fraction::ONE) {
                     write!(f, "{} Hz", self.raw)
-                } else if F.num == 1_000 && F.denom == 1 {
+                } else if F.const_eq(Fraction::KILO) {
                     write!(f, "{} kHz", self.raw)
-                } else if F.num == 1_000_000 && F.denom == 1 {
+                } else if F.const_eq(Fraction::MEGA) {
                     write!(f, "{} MHz", self.raw)
-                } else if F.num == 1_000_000_000 && F.denom == 1 {
+                } else if F.const_eq(Fraction::new(1_000_000_000, 1)) {
                     write!(f, "{} GHz", self.raw)
                 } else {
                     write!(f, "{} raw @ ({}/{})", self.raw, F.num, F.denom)
