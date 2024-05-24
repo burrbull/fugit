@@ -1,4 +1,7 @@
-use super::Fraction;
+use super::{
+    fraction::{self, const_eq},
+    Fraction,
+};
 use crate::duration::Duration;
 use crate::helpers::Helpers;
 use core::cmp::Ordering;
@@ -20,12 +23,12 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let _i = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let _i = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             /// ```
             #[inline]
             pub const fn from_ticks(ticks: $i) -> Self {
-                assert!(F.num > 0);
-                assert!(F.denom > 0);
+                assert!(F.0 > 0);
+                assert!(F.1 > 0);
 
                 Instant { ticks }
             }
@@ -34,7 +37,7 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(234);")]
+            #[doc = concat!("let i = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(234);")]
             ///
             /// assert_eq!(i.ticks(), 234);
             /// ```
@@ -47,8 +50,8 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i1 = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
-            #[doc = concat!("let i2 = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(2);")]
+            #[doc = concat!("let i1 = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let i2 = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(2);")]
             ///
             /// assert_eq!(i1.const_cmp(i2), core::cmp::Ordering::Less);
             /// ```
@@ -59,8 +62,8 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i1 = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(", stringify!($i),"::MAX);")]
-            #[doc = concat!("let i2 = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let i1 = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(", stringify!($i),"::MAX);")]
+            #[doc = concat!("let i2 = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             ///
             /// assert_eq!(i1.const_cmp(i2), core::cmp::Ordering::Less);
             /// ```
@@ -87,7 +90,7 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(11);")]
+            #[doc = concat!("let i = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(11);")]
             ///
             /// assert_eq!(i.duration_since_epoch().ticks(), 11);
             /// ```
@@ -100,8 +103,8 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i1 = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
-            #[doc = concat!("let i2 = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(2);")]
+            #[doc = concat!("let i1 = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let i2 = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(2);")]
             ///
             /// assert_eq!(i1.checked_duration_since(i2), None);
             /// assert_eq!(i2.checked_duration_since(i1).unwrap().ticks(), 1);
@@ -125,8 +128,8 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
-            #[doc = concat!("let d = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let i = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let d = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             ///
             /// assert_eq!(i.checked_sub_duration(d).unwrap().ticks(), 0);
             /// ```
@@ -158,8 +161,8 @@ macro_rules! impl_instant_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let i = Instant::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
-            #[doc = concat!("let d = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let i = Instant::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let d = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             ///
             /// assert_eq!(i.checked_add_duration(d).unwrap().ticks(), 2);
             /// ```
@@ -313,40 +316,40 @@ macro_rules! impl_instant_for_integer {
         #[cfg(feature = "defmt")]
         impl<const F: Fraction> defmt::Format for Instant<$i, F> {
             fn format(&self, f: defmt::Formatter) {
-                if F.const_eq(Fraction::new(3600, 1)) {
+                if const_eq(F, (3600, 1)) {
                     defmt::write!(f, "{} h", self.ticks)
-                } else if F.const_eq(Fraction::new(60, 1)) {
+                } else if const_eq(F, (60, 1)) {
                     defmt::write!(f, "{} min", self.ticks)
-                } else if F.const_eq(Fraction::ONE) {
+                } else if const_eq(F, fraction::ONE) {
                     defmt::write!(f, "{} s", self.ticks)
-                } else if F.const_eq(Fraction::MILLI) {
+                } else if const_eq(F, fraction::MILLI) {
                     defmt::write!(f, "{} ms", self.ticks)
-                } else if F.const_eq(Fraction::MICRO) {
+                } else if const_eq(F, fraction::MICRO) {
                     defmt::write!(f, "{} us", self.ticks)
-                } else if F.const_eq(Fraction::NANO) {
+                } else if const_eq(F, fraction::NANO) {
                     defmt::write!(f, "{} ns", self.ticks)
                 } else {
-                    defmt::write!(f, "{} ticks @ ({}/{})", self.ticks, F.num, F.denom)
+                    defmt::write!(f, "{} ticks @ ({}/{})", self.ticks, F.0, F.1)
                 }
             }
         }
 
         impl<const F: Fraction> core::fmt::Display for Instant<$i, F> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                if F.const_eq(Fraction::new(3600, 1)) {
+                if const_eq(F, (3600, 1)) {
                     write!(f, "{} h", self.ticks)
-                } else if F.const_eq(Fraction::new(60, 1)) {
+                } else if const_eq(F, (60, 1)) {
                     write!(f, "{} min", self.ticks)
-                } else if F.const_eq(Fraction::ONE) {
+                } else if const_eq(F, fraction::ONE) {
                     write!(f, "{} s", self.ticks)
-                } else if F.const_eq(Fraction::MILLI) {
+                } else if const_eq(F, fraction::MILLI) {
                     write!(f, "{} ms", self.ticks)
-                } else if F.const_eq(Fraction::MICRO) {
+                } else if const_eq(F, fraction::MICRO) {
                     write!(f, "{} us", self.ticks)
-                } else if F.const_eq(Fraction::NANO) {
+                } else if const_eq(F, fraction::NANO) {
                     write!(f, "{} ns", self.ticks)
                 } else {
-                    write!(f, "{} ticks @ ({}/{})", self.ticks, F.num, F.denom)
+                    write!(f, "{} ticks @ ({}/{})", self.ticks, F.0, F.1)
                 }
             }
         }

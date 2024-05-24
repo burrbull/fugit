@@ -1,15 +1,12 @@
 //! Type aliases for common uses
 
-use crate::{Duration, Fraction, Instant, Rate};
+use crate::{
+    fraction::{KILO, MEGA, MICRO, MILLI, NANO, ONE},
+    Duration, Fraction, Instant, Rate,
+};
 
-const NANO: Fraction = Fraction::NANO;
-const MICRO: Fraction = Fraction::MICRO;
-const MILLI: Fraction = Fraction::MILLI;
-const ONE: Fraction = Fraction::ONE;
-const MIN: Fraction = Fraction::new(60, 1);
-const HOUR: Fraction = Fraction::new(3600, 1);
-const KILO: Fraction = Fraction::KILO;
-const MEGA: Fraction = Fraction::MEGA;
+const MIN: Fraction = (60, 1);
+const HOUR: Fraction = (3600, 1);
 
 /// Alias for nanosecond duration
 pub type NanosDuration<T> = Duration<T, NANO>;
@@ -65,25 +62,34 @@ pub type HoursDurationU32 = Duration<u32, HOUR>;
 /// Alias for hours duration (`u64` backing storage)
 pub type HoursDurationU64 = Duration<u64, HOUR>;
 
+mod sealed {
+    pub const fn sub<const FREQ_HZ: u32>() -> (u32, u32) {
+        (1, FREQ_HZ)
+    }
+    pub const fn multi<const FREQ_HZ: u32>() -> (u32, u32) {
+        (FREQ_HZ, 1)
+    }
+}
+
 /// Alias for durations that come from timers with a specific frequency
-pub type TimerDuration<T, const FREQ_HZ: u32> = Duration<T, { Fraction::new(1, FREQ_HZ) }>;
+pub type TimerDuration<T, const FREQ_HZ: u32> = Duration<T, { sealed::sub::<FREQ_HZ>() }>;
 
 /// Alias for durations that come from timers with a specific frequency (`u32` backing storage)
-pub type TimerDurationU32<const FREQ_HZ: u32> = Duration<u32, { Fraction::new(1, FREQ_HZ) }>;
+pub type TimerDurationU32<const FREQ_HZ: u32> = Duration<u32, { sealed::sub::<FREQ_HZ>() }>;
 
 /// Alias for durations that come from timers with a specific frequency (`u64` backing storage)
-pub type TimerDurationU64<const FREQ_HZ: u32> = Duration<u64, { Fraction::new(1, FREQ_HZ) }>;
+pub type TimerDurationU64<const FREQ_HZ: u32> = Duration<u64, { sealed::sub::<FREQ_HZ>() }>;
 
 // -------------------------------
 
 /// Alias for instants that come from timers with a specific frequency
-pub type TimerInstant<T, const FREQ_HZ: u32> = Instant<T, { Fraction::new(1, FREQ_HZ) }>;
+pub type TimerInstant<T, const FREQ_HZ: u32> = Instant<T, { sealed::sub::<FREQ_HZ>() }>;
 
 /// Alias for instants that come from timers with a specific frequency (`u32` backing storage)
-pub type TimerInstantU32<const FREQ_HZ: u32> = Instant<u32, { Fraction::new(1, FREQ_HZ) }>;
+pub type TimerInstantU32<const FREQ_HZ: u32> = Instant<u32, { sealed::sub::<FREQ_HZ>() }>;
 
 /// Alias for instants that come from timers with a specific frequency (`u64` backing storage)
-pub type TimerInstantU64<const FREQ_HZ: u32> = Instant<u64, { Fraction::new(1, FREQ_HZ) }>;
+pub type TimerInstantU64<const FREQ_HZ: u32> = Instant<u64, { sealed::sub::<FREQ_HZ>() }>;
 
 // -------------------------------
 
@@ -115,10 +121,10 @@ pub type MegahertzU32 = Rate<u32, MEGA>;
 pub type MegahertzU64 = Rate<u64, MEGA>;
 
 /// Alias for rate that come from timers with a specific frequency
-pub type TimerRate<T, const FREQ_HZ: u32> = Rate<T, { Fraction::new(FREQ_HZ, 1) }>;
+pub type TimerRate<T, const FREQ_HZ: u32> = Rate<T, { sealed::multi::<FREQ_HZ>() }>;
 
 /// Alias for rate that come from timers with a specific frequency (`u32` backing storage)
-pub type TimerRateU32<const FREQ_HZ: u32> = Rate<u32, { Fraction::new(FREQ_HZ, 1) }>;
+pub type TimerRateU32<const FREQ_HZ: u32> = Rate<u32, { sealed::multi::<FREQ_HZ>() }>;
 
 /// Alias for rate that come from timers with a specific frequency (`u64` backing storage)
-pub type TimerRateU64<const FREQ_HZ: u32> = Rate<u64, { Fraction::new(FREQ_HZ, 1) }>;
+pub type TimerRateU64<const FREQ_HZ: u32> = Rate<u64, { sealed::multi::<FREQ_HZ>() }>;

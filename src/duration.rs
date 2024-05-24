@@ -1,4 +1,7 @@
-use super::Fraction;
+use super::{
+    fraction::{self, const_eq},
+    Fraction,
+};
 use crate::helpers::Helpers;
 use crate::Rate;
 use core::cmp::Ordering;
@@ -49,12 +52,12 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let _d = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let _d = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             /// ```
             #[inline]
             pub const fn from_ticks(ticks: $i) -> Self {
-                assert!(F.num > 0);
-                assert!(F.denom > 0);
+                assert!(F.0 > 0);
+                assert!(F.1 > 0);
 
                 Duration { ticks }
             }
@@ -63,7 +66,7 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(234);")]
+            #[doc = concat!("let d = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(234);")]
             ///
             /// assert_eq!(d.ticks(), 234);
             /// ```
@@ -76,8 +79,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let zero = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(0);")]
-            #[doc = concat!("let one = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let zero = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(0);")]
+            #[doc = concat!("let one = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             ///
             /// assert_eq!(zero.is_zero(), true);
             /// assert_eq!(one.is_zero(), false);
@@ -91,9 +94,9 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
-            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(2);")]
-            #[doc = concat!("let d3 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(", stringify!($i), "::MAX);")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(2);")]
+            #[doc = concat!("let d3 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(", stringify!($i), "::MAX);")]
             ///
             /// assert_eq!(d1.checked_add(d2).unwrap().ticks(), 3);
             /// assert_eq!(d1.checked_add(d3), None);
@@ -130,9 +133,9 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
-            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(2);")]
-            #[doc = concat!("let d3 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(", stringify!($i), "::MAX);")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(2);")]
+            #[doc = concat!("let d3 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(", stringify!($i), "::MAX);")]
             ///
             /// assert_eq!(d2.checked_sub(d1).unwrap().ticks(), 1);
             /// assert_eq!(d1.checked_sub(d3), None);
@@ -181,8 +184,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_00) }>::from_ticks(1);")]
-            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(1);")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_00) }>::from_ticks(1);")]
+            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(1);")]
             ///
             /// assert_eq!(d1.const_partial_cmp(d2), Some(core::cmp::Ordering::Greater));
             /// ```
@@ -229,8 +232,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_00) }>::from_ticks(1);")]
-            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(10);")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_00) }>::from_ticks(1);")]
+            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(10);")]
             ///
             /// assert!(d1.const_eq(d2));
             /// ```
@@ -262,8 +265,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_00) }>::from_ticks(1);")]
-            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::const_try_from(d1);")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_00) }>::from_ticks(1);")]
+            #[doc = concat!("let d2 = Duration::<", stringify!($i), ", { (1, 1_000) }>::const_try_from(d1);")]
             ///
             /// assert_eq!(d2.unwrap().ticks(), 10);
             /// ```
@@ -293,8 +296,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_00) }>::from_ticks(1);")]
-            #[doc = concat!("let d2: Option<Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>> = d1.const_try_into();")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_00) }>::from_ticks(1);")]
+            #[doc = concat!("let d2: Option<Duration::<", stringify!($i), ", { (1, 1_000) }>> = d1.const_try_into();")]
             ///
             /// assert_eq!(d2.unwrap().ticks(), 10);
             /// ```
@@ -309,8 +312,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::from_ticks(2);")]
-            #[doc = concat!("let r1: Option<Rate::<", stringify!($i), ", { Fraction::new(1, 1) }>> = d1.try_into_rate();")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_000) }>::from_ticks(2);")]
+            #[doc = concat!("let r1: Option<Rate::<", stringify!($i), ", { (1, 1) }>> = d1.try_into_rate();")]
             ///
             /// assert_eq!(r1.unwrap().raw(), 500);
             /// ```
@@ -337,8 +340,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let r1 = Rate::<", stringify!($i), ", { Fraction::new(1, 1) }>::from_raw(1);")]
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }>::try_from_rate(r1);")]
+            #[doc = concat!("let r1 = Rate::<", stringify!($i), ", { (1, 1) }>::from_raw(1);")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 1_000) }>::try_from_rate(r1);")]
             ///
             /// assert_eq!(d1.unwrap().ticks(), 1_000);
             /// ```
@@ -374,8 +377,8 @@ macro_rules! impl_duration_for_integer {
             ///
             /// ```
             /// # use fugit::*;
-            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { Fraction::new(1, 100) }>::from_ticks(1);")]
-            #[doc = concat!("let d2: Duration::<", stringify!($i), ", { Fraction::new(1, 1_000) }> = d1.convert();")]
+            #[doc = concat!("let d1 = Duration::<", stringify!($i), ", { (1, 100) }>::from_ticks(1);")]
+            #[doc = concat!("let d2: Duration::<", stringify!($i), ", { (1, 1_000) }> = d1.convert();")]
             ///
             /// assert_eq!(d2.ticks(), 10);
             /// ```
@@ -383,9 +386,9 @@ macro_rules! impl_duration_for_integer {
             /// ```compile_fail
             /// # use fugit::*;
             #[doc = concat!("const TICKS: ", stringify!($i), "= ", stringify!($i), "::MAX - 10;")]
-            #[doc = concat!("const D1: Duration::<", stringify!($i), ", { Fraction::new(1, 100) }> = Duration::<", stringify!($i), ", { Fraction::new(1, 100) }>::from_ticks(TICKS);")]
+            #[doc = concat!("const D1: Duration::<", stringify!($i), ", { (1, 100) }> = Duration::<", stringify!($i), ", { (1, 100) }>::from_ticks(TICKS);")]
             /// // Fails conversion due to tick overflow
-            #[doc = concat!("const D2: Duration::<", stringify!($i), ", { Fraction::new(1, 200) }> = D1.convert();")]
+            #[doc = concat!("const D2: Duration::<", stringify!($i), ", { (1, 200) }> = D1.convert();")]
             #[inline]
             pub const fn convert<const O: Fraction>(
                 self,
@@ -397,12 +400,12 @@ macro_rules! impl_duration_for_integer {
                 }
             }
 
-            shorthand!($i, { Fraction::new(1, 1_000_000_000) }, nanos, to_nanos, nanos_at_least, "nanoseconds");
-            shorthand!($i, { Fraction::new(1, 1_000_000) }, micros, to_micros, micros_at_least, "microseconds");
-            shorthand!($i, { Fraction::new(1, 1_000) }, millis, to_millis, millis_at_least, "milliseconds");
-            shorthand!($i, { Fraction::new(1, 1) }, secs, to_secs, secs_at_least, "seconds");
-            shorthand!($i, { Fraction::new(60, 1) }, minutes, to_minutes, minutes_at_least, "minutes");
-            shorthand!($i, { Fraction::new(3600, 1) }, hours, to_hours, hours_at_least, "hours");
+            shorthand!($i, { (1, 1_000_000_000) }, nanos, to_nanos, nanos_at_least, "nanoseconds");
+            shorthand!($i, { (1, 1_000_000) }, micros, to_micros, micros_at_least, "microseconds");
+            shorthand!($i, { (1, 1_000) }, millis, to_millis, millis_at_least, "milliseconds");
+            shorthand!($i, { (1, 1) }, secs, to_secs, secs_at_least, "seconds");
+            shorthand!($i, { (60, 1) }, minutes, to_minutes, minutes_at_least, "minutes");
+            shorthand!($i, { (3600, 1) }, hours, to_hours, hours_at_least, "hours");
 
             /// Shorthand for creating a duration which represents hertz.
             #[inline]
@@ -577,40 +580,40 @@ macro_rules! impl_duration_for_integer {
         impl<const F: Fraction> defmt::Format for Duration<$i, F>
         {
             fn format(&self, f: defmt::Formatter) {
-                if F.const_eq(Fraction::new(3600, 1)) {
+                if const_eq(F, (3600, 1)) {
                     defmt::write!(f, "{} h", self.ticks)
-                } else if F.const_eq(Fraction::new(60, 1)) {
+                } else if const_eq(F, (60, 1)) {
                     defmt::write!(f, "{} min", self.ticks)
-                } else if F.const_eq(Fraction::ONE) {
+                } else if const_eq(F, fraction::ONE) {
                     defmt::write!(f, "{} s", self.ticks)
-                } else if F.const_eq(Fraction::MILLI) {
+                } else if const_eq(F, fraction::MILLI) {
                     defmt::write!(f, "{} ms", self.ticks)
-                } else if F.const_eq(Fraction::MICRO) {
+                } else if const_eq(F, fraction::MICRO) {
                     defmt::write!(f, "{} us", self.ticks)
-                } else if F.const_eq(Fraction::NANO) {
+                } else if const_eq(F, fraction::NANO) {
                     defmt::write!(f, "{} ns", self.ticks)
                 } else {
-                    defmt::write!(f, "{} ticks @ ({}/{})", self.ticks, F.num, F.denom)
+                    defmt::write!(f, "{} ticks @ ({}/{})", self.ticks, F.0, F.1)
                 }
             }
         }
 
         impl<const F: Fraction> core::fmt::Display for Duration<$i, F> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                if F.const_eq(Fraction::new(3600, 1)) {
+                if const_eq(F, (3600, 1)) {
                     write!(f, "{} h", self.ticks)
-                } else if F.const_eq(Fraction::new(60, 1)) {
+                } else if const_eq(F, (60, 1)) {
                     write!(f, "{} min", self.ticks)
-                } else if F.const_eq(Fraction::ONE) {
+                } else if const_eq(F, fraction::ONE) {
                     write!(f, "{} s", self.ticks)
-                } else if F.const_eq(Fraction::MILLI) {
+                } else if const_eq(F, fraction::MILLI) {
                     write!(f, "{} ms", self.ticks)
-                } else if F.const_eq(Fraction::MICRO) {
+                } else if const_eq(F, fraction::MICRO) {
                     write!(f, "{} us", self.ticks)
-                } else if F.const_eq(Fraction::NANO) {
+                } else if const_eq(F, fraction::NANO) {
                     write!(f, "{} ns", self.ticks)
                 } else {
-                    write!(f, "{} ticks @ ({}/{})", self.ticks, F.num, F.denom)
+                    write!(f, "{} ticks @ ({}/{})", self.ticks, F.0, F.1)
                 }
             }
         }
